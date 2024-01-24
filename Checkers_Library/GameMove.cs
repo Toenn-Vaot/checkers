@@ -8,7 +8,7 @@ namespace Checkers_Library
         /// <summary>
         /// Get the list of <see cref="IPawn"/> caught during the <see cref="GameMove"/>
         /// </summary>
-        public List<IPawn> PawnsCaught { get; set; }
+        public List<PawnBase> PawnsCaught { get; set; }
 
         /// <summary>
         /// Get the list of positions passed during the <see cref="GameMove"/>
@@ -31,7 +31,7 @@ namespace Checkers_Library
         public GameMove()
         {
             Positions = new List<int>();
-            PawnsCaught = new List<IPawn>();
+            PawnsCaught = new List<PawnBase>();
         }
 
         /// <summary>
@@ -46,10 +46,10 @@ namespace Checkers_Library
         }
 
         /// <summary>
-        /// Adds an <see cref="IPawn"/>to the list of <see cref="IPawn"/> caught
+        /// Adds an <see cref="PawnBase"/>to the list of <see cref="PawnBase"/> caught
         /// </summary>
         /// <param name="pawnCaught">The control to add to the list</param>
-        public void AddCatch(IPawn pawnCaught)
+        public void AddCatch(PawnBase pawnCaught)
         {
             PawnsCaught.Add(pawnCaught);
         }

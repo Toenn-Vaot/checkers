@@ -3,18 +3,22 @@ using Checkers_Library.Interfaces;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using Checkers_Library.Events;
 
 namespace Checkers_Controls
 {
-    public sealed partial class PawnControl : UserControl, IPawn
+    public sealed partial class PawnControl : PawnBase
     {
-        #region Control Events
+        #region Events
 
-        public event EventHandler Promote;
+        /// <inheritdoc />
+        public override event EventHandler Promote;
 
-        public event EventHandler Gloups;
+        /// <inheritdoc />
+        public override event EventHandler Gloups;
 
-        public event EventHandler Gloupsed;
+        /// <inheritdoc />
+        public override event GloupsedEventHandler Gloupsed;
 
         #endregion
 
@@ -23,51 +27,38 @@ namespace Checkers_Controls
         /// </summary>
         private const int FixedSize = 50;
 
-        #region Private instances
-
-        /// <summary>
-        /// Private instance of the property <see cref="IsQueen"/>
-        /// </summary>
-        private bool _isQueen;
-
-        #endregion
-
         #region Properties
-
-        /// <summary>
-        /// The color of the <see cref="PawnControl"/>
-        /// </summary>
-        public GameColor Color
+        
+        /// <inheritdoc />
+        public override bool IsQueen
         {
-            get => BackColor == System.Drawing.Color.Black ? GameColor.Black : GameColor.White;
+            get => IsQueenValue;
             set
             {
-                switch (value)
-                {
-                    case GameColor.Black:
-                        BackColor = System.Drawing.Color.Black;
-                        break;
-                    case GameColor.White:
-                    case GameColor.CustomBlack:
-                    case GameColor.CustomWhite:
-                    default:
-                        BackColor = System.Drawing.Color.White;
-                        break;
-                }
+                IsQueenValue = value;
+            }
+        }
+        
+        /// <inheritdoc />
+        public override bool IsGloupsed
+        {
+            get => IsGloupsedValue;
+            set
+            {
+                IsGloupsedValue = value;
+                Gloupsed?.Invoke(this, new PawnGloupsedEventArgs { Parent = Parent, PawnGloupsed = this });
                 Invalidate();
             }
         }
 
-        /// <summary>
-        /// Indicates if the <see cref="PawnControl"/> is a Queen
-        /// </summary>
-        public bool IsQueen
+        /// <inheritdoc />
+        public override bool HasGloups
         {
-            get => _isQueen;
-            internal set
+            get => HasGloupsValue;
+            set
             {
-                _isQueen = value;
-                Promote?.Invoke(this, EventArgs.Empty);
+                HasGloupsValue = value;
+                Gloups?.Invoke(this, EventArgs.Empty);
                 Invalidate();
             }
         }
@@ -153,17 +144,33 @@ namespace Checkers_Controls
             base.OnMouseMove(e);
             if (e.Button == MouseButtons.Left)
             {
-                DoDragDrop(this, GameIA.Instance.NextPlayer.Color == Color ? DragDropEffects.Move : DragDropEffects.None);
+                DoDragDrop(this, GameIA.Instance.CurrentPlayer.Color == Color ? DragDropEffects.Move : DragDropEffects.None);
             }
         }
 
         protected override void OnMouseHover(EventArgs e)
         {
             Cursor = Cursors.Hand;
-            if (GameIA.Instance.NextPlayer.Color != Color)
+            if (GameIA.Instance.CurrentPlayer.Color != Color)
                 Cursor = Cursors.No;
 
             base.OnMouseHover(e);
+        }
+
+        /// <inheritdoc />
+        protected override void OnParentChanged(EventArgs e)
+        {
+            if (Parent is CaseControl caseCtrl && !IsQueen)
+            {
+                if (caseCtrl.Line == (int)GameIA.Instance.Rules.Mode && GameIA.Instance.CurrentPlayer.Color == Color)
+                {
+                    IsQueen = true;
+                    Promote?.Invoke(this, EventArgs.Empty);
+                    Invalidate();
+                }
+            }
+
+            base.OnParentChanged(e);
         }
 
         public bool CanGloups(CaseControl movedTo)

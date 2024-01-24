@@ -30,18 +30,18 @@ namespace Checkers_Controls
         /// </summary>
         public GameColor FirstPlayColor { get; set; }
 
-        private GameMode _mode = GameMode.Mode_10x10;
+        private GameMode _mode = GameMode.Mode10X10;
         /// <summary>
         /// The <see cref="GameMode"/> of the game determined the size of the <see cref="Gameboard"/> and the number of <see cref="PawnControl"/>
         /// </summary>
         /// <remarks>The event <see cref="GameModeChanged"/> is triggered when property is set</remarks>
         public GameMode Mode
         {
-            get { return _mode; }
+            get => _mode;
             set
             {
                 _mode = value;
-                GameModeChanged?.Invoke(this, new EventArgs());
+                GameModeChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 

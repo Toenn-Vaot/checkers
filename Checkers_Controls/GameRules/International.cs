@@ -10,7 +10,7 @@ namespace Checkers_Controls.GameRules
             FirstRightCaseColor = GameColor.White;
             ActiveCaseColor = GameColor.Black;
             FirstPlayColor = GameColor.White;
-            Mode = GameMode.Mode_10x10;
+            Mode = GameMode.Mode10X10;
             PawnCanGloupsBehind = false;
             QueenCanMoveMulti = true;
             PawnCanGloupsQueen = true;

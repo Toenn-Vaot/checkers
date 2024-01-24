@@ -14,7 +14,7 @@ namespace Checkers_Controls
             GameIA.Instance.GameModeChanged += GameIA_GameModeChanged;
             GameIA.Instance.NextPlayerChanged += GameIA_NextPlayerChanged;
         }
-        
+
         public void GameIA_GameModeChanged(object sender, EventArgs e)
         {
             var currentMode = GameIA.Instance.Rules.Mode;

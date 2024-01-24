@@ -29,12 +29,12 @@ namespace Checkers_Controls
 			set
 			{
 				_color = value;
-				BackColor = _color == GameColor.Black ? System.Drawing.Color.Black : System.Drawing.Color.White;
+				BackColor = _color == GameColor.Black ? System.Drawing.Color.DimGray : System.Drawing.Color.White;
 			}
 		}
 
 		/// <summary>
-		/// Get the <see cref="PawnControl"/> present on the <see cref="CaseControl"/>. Otherwise null.
+		/// Get the <see cref="PawnControl"/> present on the <see cref="CaseControl"/>. Otherwise, null.
 		/// </summary>
 		public PawnControl Pawn => Controls.OfType<PawnControl>().FirstOrDefault();
 
@@ -141,7 +141,8 @@ namespace Checkers_Controls
 							{
 								if (BackRightCase.Pawn != null)
 								{
-									BackRightCase.Controls.Remove(BackRightCase.Pawn); //QUEEN LEFT gloups
+                                    pawnMoved.HasGloups = true;
+                                    BackRightCase.Pawn.IsGloupsed = true; //QUEEN LEFT gloups
 									gloupsDone = true;
 								}
 							}
@@ -149,7 +150,8 @@ namespace Checkers_Controls
 							{
 								if (BackLeftCase.Pawn != null)
 								{
-									BackLeftCase.Controls.Remove(BackLeftCase.Pawn); //QUEEN RIGHT gloups
+                                    pawnMoved.HasGloups = true;
+                                    BackLeftCase.Pawn.IsGloupsed = true; //QUEEN RIGHT gloups
 									gloupsDone = true;
 								}
 							}
@@ -157,14 +159,16 @@ namespace Checkers_Controls
 						else
 						{
 							if (caseFrom.DiagonalLeft == DiagonalLeft && caseFrom.FrontLeftCase.Pawn != null)
-							{
-								caseFrom.FrontLeftCase.Controls.Remove(caseFrom.FrontLeftCase.Pawn); //LEFT gloups
+                            {
+                                pawnMoved.HasGloups = true;
+                                caseFrom.FrontLeftCase.Pawn.IsGloupsed = true; //LEFT gloups
 								gloupsDone = true;
 							}
 
 							if (caseFrom.DiagonalRight == DiagonalRight && caseFrom.FrontRightCase.Pawn != null)
 							{
-								caseFrom.FrontRightCase.Controls.Remove(caseFrom.FrontRightCase.Pawn); //RIGHT gloups
+                                pawnMoved.HasGloups = true;
+                                caseFrom.FrontRightCase.Pawn.IsGloupsed = true; //RIGHT gloups
 								gloupsDone = true;
 							}
 						}
@@ -177,7 +181,8 @@ namespace Checkers_Controls
 							{
 								if (FrontLeftCase.Pawn != null)
 								{
-									FrontLeftCase.Controls.Remove(FrontLeftCase.Pawn); //QUEEN BACKWARD LEFT gloups or Rules allowed the gloups behind
+                                    pawnMoved.HasGloups = true;
+                                    FrontLeftCase.Pawn.IsGloupsed = true; //QUEEN BACKWARD LEFT gloups or Rules allowed the gloups behind
 									gloupsDone = true;
 								}
 							}
@@ -185,7 +190,8 @@ namespace Checkers_Controls
 							{
 								if (FrontRightCase.Pawn != null)
 								{
-									FrontRightCase.Controls.Remove(FrontRightCase.Pawn); //QUEEN BACKWARD RIGHT gloups or Rules allowed the gloups behind
+                                    pawnMoved.HasGloups = true;
+                                    FrontRightCase.Pawn.IsGloupsed = true; //QUEEN BACKWARD RIGHT gloups or Rules allowed the gloups behind
 									gloupsDone = true;
 								}
 							}
@@ -193,10 +199,7 @@ namespace Checkers_Controls
 					}
 
 					Controls.Add(pawnMoved);
-
-					if (Line == (int)GameIA.Instance.Rules.Mode)
-						pawnMoved.IsQueen = true;
-
+					
 					if (gloupsDone)
 					{
 						if (pawnMoved.CanGloups(this))
@@ -220,7 +223,7 @@ namespace Checkers_Controls
 				if (GameIA.Instance.DisplayCaseInformation)
                 {
                     //Display the position number according to current player point of view
-                    if (GameIA.Instance.NextPlayer.Color == GameColor.Black || GameIA.Instance.NextPlayer.Color == GameColor.CustomBlack)
+                    if (GameIA.Instance.CurrentPlayer.Color == GameColor.Black || GameIA.Instance.CurrentPlayer.Color == GameColor.CustomBlack)
 					{
 						e.Graphics.DrawString(Position.ToString(), Font, Brushes.Red, new PointF(0, 0));
 					}
@@ -277,7 +280,7 @@ namespace Checkers_Controls
 					var currentCase = caseFrom.FrontLeftCase;
 					while (currentCase != null && currentCase != this)
 					{
-						if (currentCase.Pawn != null && currentCase.FrontLeftCase != this) return false;
+						if (currentCase.Pawn != null && currentCase.FrontLeftCase != this && !controlMoving.IsQueen) return false;
 						currentCase = currentCase.FrontLeftCase;
 					}
 
@@ -296,7 +299,7 @@ namespace Checkers_Controls
 					var currentCase = caseFrom.FrontRightCase;
 					while (currentCase != null && currentCase != this)
 					{
-						if (currentCase.Pawn != null && currentCase.FrontRightCase != this) return false;
+						if (currentCase.Pawn != null && currentCase.FrontRightCase != this && !controlMoving.IsQueen) return false;
 						currentCase = currentCase.FrontRightCase;
 					}
 

@@ -4,12 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Drawing;
+using Checkers_Library.Events;
 
 namespace Checkers_Controls
 {
     public class GameIA
     {
         #region Events
+
+        public event EventHandler Initialized;
 
         public event EventHandler<GameRuleEventArgs> RulesChanged;
 
@@ -29,7 +32,7 @@ namespace Checkers_Controls
 
         #region Privates fields
 
-        private Player _nextPlayer;
+        private Player _currentPlayer;
 
         private GameRule _rules;
 
@@ -56,12 +59,12 @@ namespace Checkers_Controls
         /// The future <see cref="Player"/> will play
         /// </summary>
         /// <remarks>Trigger the event <see cref="NextPlayerChanged"/> when the property is set</remarks>
-        public Player NextPlayer
+        public Player CurrentPlayer
         {
-            get { return _nextPlayer; }
+            get => _currentPlayer;
             private set
             {
-                _nextPlayer = value;
+                _currentPlayer = value;
                 NextPlayerChanged?.Invoke(this, new EventArgs());
             }
         }
@@ -72,7 +75,7 @@ namespace Checkers_Controls
         /// <remarks>Trigger the event <see cref="RulesChanged"/> when the property is set</remarks>
         public GameRule Rules
         {
-            get { return _rules; }
+            get => _rules;
             set
             {
                 RulesChanged?.Invoke(this, new GameRuleEventArgs(_rules, value));
@@ -107,18 +110,18 @@ namespace Checkers_Controls
         /// </summary>
         public bool DisplayPawnInfo => bool.TryParse(ConfigurationManager.AppSettings["DisplayPawnInformation"], out var result) && result;
 
-		#endregion
+        #endregion
 
-		/// <summary>
-		/// Private constructor according to the design pattern singleton
-		/// </summary>
-		private GameIA()
+        /// <summary>
+        /// Private constructor according to the design pattern singleton
+        /// </summary>
+        private GameIA()
         {
             Moves = new Queue<GameMove>();
         }
 
         /// <summary>
-        /// The event method triggers when the <see cref="NextPlayer"/> property changed
+        /// The event method triggers when the <see cref="CurrentPlayer"/> property changed
         /// </summary>
         /// <param name="sender">The invoker of the event</param>
         /// <param name="e">The arguments passed during the event</param>
@@ -150,8 +153,8 @@ namespace Checkers_Controls
             {
                 if (control.Parent == Board)
                 {
-                    if (NextPlayer == Blacks) return (Board.Controls.IndexOf(control) / 2) + 1;
-                    if (NextPlayer == Whites) return (int)Math.Ceiling((int)Rules.Mode / 2 * (int)Rules.Mode - (Board.Controls.IndexOf(control) / 2d));
+                    if (CurrentPlayer == Blacks) return (Board.Controls.IndexOf(control) / 2) + 1;
+                    if (CurrentPlayer == Whites) return (int)Math.Ceiling((int)Rules.Mode / 2 * (int)Rules.Mode - (Board.Controls.IndexOf(control) / 2d));
                 }
             }
             return default;
@@ -165,8 +168,8 @@ namespace Checkers_Controls
                 var lineIndex = position / CountActiveCases + (position % CountActiveCases == 0 ? 0 : 1);
                 var isPairIndex = lineIndex % 2 == 0;
 
-                if (NextPlayer == Blacks) return Board.Controls[position * 2 - 1 - (isPairIndex ? 1 : 0)] as CaseControl;
-                if (NextPlayer == Whites) return Board.Controls[Board.Controls.Count - position * 2 + (isPairIndex ? 1 : 0)] as CaseControl;
+                if (CurrentPlayer == Blacks) return Board.Controls[position * 2 - 1 - (isPairIndex ? 1 : 0)] as CaseControl;
+                if (CurrentPlayer == Whites) return Board.Controls[Board.Controls.Count - position * 2 + (isPairIndex ? 1 : 0)] as CaseControl;
             }
             return null;
         }
@@ -183,8 +186,8 @@ namespace Checkers_Controls
             {
                 case CaseDirection.Left:
                     if (lineIndex == (int)Rules.Mode) break;
-                    if (NextPlayer == Whites && (lineIndex * CountActiveCases == position && !isPairIndex)) break;
-                    if (NextPlayer == Blacks && (((lineIndex - 1) * CountActiveCases) + 1 == position && isPairIndex)) break;
+                    if (CurrentPlayer == Whites && (lineIndex * CountActiveCases == position && !isPairIndex)) break;
+                    if (CurrentPlayer == Blacks && (((lineIndex - 1) * CountActiveCases) + 1 == position && isPairIndex)) break;
 
                     moveDelta = isPairIndex ? 5 : 6;
                     return position + moveDelta;
@@ -198,8 +201,8 @@ namespace Checkers_Controls
 
                 case CaseDirection.Right:
                     if (lineIndex == (int)Rules.Mode) break;
-                    if (NextPlayer == Whites && (((lineIndex - 1) * CountActiveCases) + 1 == position && isPairIndex)) break;
-                    if (NextPlayer == Blacks && (lineIndex * CountActiveCases == position && !isPairIndex)) break;
+                    if (CurrentPlayer == Whites && (((lineIndex - 1) * CountActiveCases) + 1 == position && isPairIndex)) break;
+                    if (CurrentPlayer == Blacks && (lineIndex * CountActiveCases == position && !isPairIndex)) break;
 
                     moveDelta = isPairIndex ? 4 : 5;
                     return position + moveDelta;
@@ -244,11 +247,14 @@ namespace Checkers_Controls
             if (Rules == null) throw new NullReferenceException("The rule set to use is not defined !");
             if (Board == null) throw new NullReferenceException("The game board to play is not defined !");
 
+            Board.Controls.Clear();
+
             //Initialize the players
-            Blacks = new Player() { Color = GameColor.Black, Name = blackPlayerName, Score = 0 };
-            Whites = new Player() { Color = GameColor.White, Name = whitePlayerName, Score = 0 };
-            //Initialize the next player
-            NextPlayer = Rules.FirstPlayColor == GameColor.White ? Whites : Blacks;
+            Blacks = new Player { Color = GameColor.Black, Name = blackPlayerName, Score = 0 };
+            Whites = new Player { Color = GameColor.White, Name = whitePlayerName, Score = 0 };
+
+            //Initialize the current player
+            CurrentPlayer = Rules.FirstPlayColor == GameColor.White ? Whites : Blacks;
 
             //Initialize the cases
             InitializeCaseControls();
@@ -257,6 +263,8 @@ namespace Checkers_Controls
             InitializePawnControls(GameColor.White);
 
             InitializeDiagonals();
+
+            Initialized?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -272,7 +280,7 @@ namespace Checkers_Controls
                 //X axis
                 for (var j = 0; j < (int)Rules.Mode; j++)
                 {
-                    Board.Controls.Add(new CaseControl() { Color = firstColor, Location = new Point(j * 50, i * 50) }); //Add the case to the gameboard
+                    Board.Controls.Add(new CaseControl { Color = firstColor, Location = new Point(j * 50, i * 50) }); //Add the case to the gameboard
                     firstColor = firstColor == GameColor.Black ? GameColor.White : GameColor.Black; //Alternate the color on columns
                 }
                 firstColor = firstColor == GameColor.Black ? GameColor.White : GameColor.Black; //Alternate another time the color to have alternate color on rows
@@ -303,7 +311,7 @@ namespace Checkers_Controls
 
                 Console.WriteLine($"line={lineIndex}, column={columnIndex}");
 
-                var pawn = new PawnControl() { Color = color }; //Create a new pawn of the color passed in parameter
+                var pawn = new PawnControl { Color = color }; //Create a new pawn of the color passed in parameter
                 var caseControl = Board.GetCaseControl(new Point(columnIndex, lineIndex)); //Get the case at the corresponding location point
 
                 //Add the pawn to the player collection according to the pawn color
@@ -312,8 +320,28 @@ namespace Checkers_Controls
                 else
                     Whites.Pawns.Add(pawn);
 
+                pawn.Gloups += PawnOnGloups;
+                pawn.Gloupsed += PawnOnGloupsed;
+                pawn.Promote += PawnOnPromote;
+
                 caseControl.Controls.Add(pawn);
             }
+        }
+
+        private void PawnOnGloups(object sender, EventArgs e)
+        {
+            CurrentPlayer.AddPoint();
+        }
+
+        private void PawnOnGloupsed(object sender, PawnGloupsedEventArgs e)
+        {
+            e.Parent.Controls.Remove(e.PawnGloupsed);
+            CurrentMove.AddCatch(e.PawnGloupsed);
+        }
+
+        private void PawnOnPromote(object sender, EventArgs e)
+        {
+            CurrentPlayer.AddPromotionPoint();
         }
 
         private void InitializeDiagonals()
@@ -391,10 +419,7 @@ namespace Checkers_Controls
 
         public void SetNextPlayer()
         {
-            if (NextPlayer == Whites)
-                NextPlayer = Blacks;
-            else
-                NextPlayer = Whites;
+            CurrentPlayer = CurrentPlayer == Whites ? Blacks : Whites;
 
             InitializeDiagonals();
 
