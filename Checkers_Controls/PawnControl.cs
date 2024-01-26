@@ -114,13 +114,13 @@ namespace Checkers_Controls
             if (Color == GameColor.Black)
                 e.Graphics.FillEllipse(
                     IsQueen
-                        ? new TextureBrush(Properties.Resources.Checker_Queen_Black, System.Drawing.Drawing2D.WrapMode.Clamp)
+                        ? new TextureBrush(Properties.Resources.Checker_Queen_Icon_Black, System.Drawing.Drawing2D.WrapMode.Clamp)
                         : new TextureBrush(Properties.Resources.Checker_Black, System.Drawing.Drawing2D.WrapMode.Clamp),
                     0, 0, 50, 50);
             else
                 e.Graphics.FillEllipse(
                     IsQueen
-                        ? new TextureBrush(Properties.Resources.Checker_Queen_White, System.Drawing.Drawing2D.WrapMode.Clamp)
+                        ? new TextureBrush(Properties.Resources.Checker_Queen_Icon_White, System.Drawing.Drawing2D.WrapMode.Clamp)
                         : new TextureBrush(Properties.Resources.Checker_White, System.Drawing.Drawing2D.WrapMode.Clamp),
                     0, 0, 50, 50);
 

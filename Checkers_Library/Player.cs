@@ -15,12 +15,7 @@ namespace Checkers_Library
         public event EventHandler ScoreChanged;
 
         #endregion
-
-        /// <summary>
-        /// The name of the player displayed during the game
-        /// </summary>
-        public string Name { get; set; }
-
+        
         /// <summary>
         /// The color of their pawns that the player can move
         /// </summary>

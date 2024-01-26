@@ -83,6 +83,26 @@ namespace Checkers_Controls.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Checker_Queen_Icon_Black {
+            get {
+                object obj = ResourceManager.GetObject("Checker_Queen_Icon_Black", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Checker_Queen_Icon_White {
+            get {
+                object obj = ResourceManager.GetObject("Checker_Queen_Icon_White", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Checker_Queen_White {
             get {
                 object obj = ResourceManager.GetObject("Checker_Queen_White", resourceCulture);

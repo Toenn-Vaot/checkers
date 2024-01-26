@@ -56,9 +56,17 @@
       <DependentUpon>Gameboard.cs</DependentUpon>
     </Compile>
     <Compile Include="GameIA.cs" />
+    <Compile Include="GameRules\Canadian.cs" />
+    <Compile Include="GameRules\Dutch.cs" />
+    <Compile Include="GameRules\English.cs" />
+    <Compile Include="GameRules\GameModeEventArgs.cs" />
     <Compile Include="GameRules\GameRule.cs" />
     <Compile Include="GameRules\GameRuleEventArgs.cs" />
+    <Compile Include="GameRules\German.cs" />
     <Compile Include="GameRules\International.cs" />
+    <Compile Include="GameRules\Italian.cs" />
+    <Compile Include="GameRules\Russian.cs" />
+    <Compile Include="GameRules\Spanish.cs" />
     <Compile Include="PawnControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -102,6 +110,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Checker_White.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Checker_Queen-Icon_Black.png" />
+    <None Include="Resources\Checker_Queen-Icon_White.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -30,7 +30,7 @@ namespace Checkers_Controls
         /// </summary>
         public GameColor FirstPlayColor { get; set; }
 
-        private GameMode _mode = GameMode.Mode10X10;
+        private GameMode _mode = GameMode.None;
         /// <summary>
         /// The <see cref="GameMode"/> of the game determined the size of the <see cref="Gameboard"/> and the number of <see cref="PawnControl"/>
         /// </summary>

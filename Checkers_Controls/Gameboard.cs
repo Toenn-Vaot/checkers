@@ -15,10 +15,10 @@ namespace Checkers_Controls
             GameIA.Instance.NextPlayerChanged += GameIA_NextPlayerChanged;
         }
 
-        public void GameIA_GameModeChanged(object sender, EventArgs e)
+        public void GameIA_GameModeChanged(object sender, GameModeEventArgs e)
         {
-            var currentMode = GameIA.Instance.Rules.Mode;
-            Size = new Size(CaseControl.FixedSize * (int)currentMode, CaseControl.FixedSize * (int)currentMode);
+            Size = new Size(CaseControl.FixedSize * (int)e.Current, CaseControl.FixedSize * (int)e.Current);
+            Location = new Point((Parent.Width - Width) / 2, (Parent.Height + 90 - Height) / 2);
             Invalidate();
         }
 

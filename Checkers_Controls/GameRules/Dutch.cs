@@ -3,9 +3,9 @@ using Checkers_Library.Enumerations;
 
 namespace Checkers_Controls.GameRules
 {
-    public class International : GameRule
+    public class Dutch : GameRule
     {
-        public International()
+        public Dutch()
         {
             FirstRightCaseColor = GameColor.White;
             ActiveCaseColor = GameColor.Black;

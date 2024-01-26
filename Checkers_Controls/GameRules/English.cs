@@ -3,19 +3,19 @@ using Checkers_Library.Enumerations;
 
 namespace Checkers_Controls.GameRules
 {
-    public class International : GameRule
+    public class English : GameRule
     {
-        public International()
+        public English()
         {
             FirstRightCaseColor = GameColor.White;
             ActiveCaseColor = GameColor.Black;
             FirstPlayColor = GameColor.White;
-            Mode = GameMode.Mode10X10;
-            PawnCanGloupsBehind = true;
+            Mode = GameMode.Mode8X8;
+            PawnCanGloupsBehind = false;
             QueenCanMoveMulti = true;
             PawnCanGloupsQueen = true;
             PassingQueen = false;
-            MaximumGloups = true;
+            MaximumGloups = false;
             QueenMustGlouspBefore = false;
             BreatheIsNotPlay = false;
             ForceToPlay = true;

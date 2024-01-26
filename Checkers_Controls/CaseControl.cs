@@ -29,7 +29,7 @@ namespace Checkers_Controls
 			set
 			{
 				_color = value;
-				BackColor = _color == GameColor.Black ? System.Drawing.Color.DimGray : System.Drawing.Color.White;
+				BackColor = _color == GameColor.Black ? System.Drawing.Color.FromArgb(50, 50, 50) : System.Drawing.Color.White;
 			}
 		}
 

@@ -16,7 +16,7 @@ namespace Checkers_Controls
 
         public event EventHandler<GameRuleEventArgs> RulesChanged;
 
-        public event EventHandler GameModeChanged;
+        public event EventHandler<GameModeEventArgs> GameModeChanged;
 
         public event EventHandler NextPlayerChanged;
 
@@ -65,7 +65,7 @@ namespace Checkers_Controls
             private set
             {
                 _currentPlayer = value;
-                NextPlayerChanged?.Invoke(this, new EventArgs());
+                NextPlayerChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -79,9 +79,8 @@ namespace Checkers_Controls
             set
             {
                 RulesChanged?.Invoke(this, new GameRuleEventArgs(_rules, value));
-
+                GameModeChanged?.Invoke(this, new GameModeEventArgs(_rules?.Mode ?? default, value.Mode));
                 _rules = value;
-                _rules.GameModeChanged += Rules_GameModeChanged;
             }
         }
 
@@ -121,16 +120,6 @@ namespace Checkers_Controls
         }
 
         /// <summary>
-        /// The event method triggers when the <see cref="CurrentPlayer"/> property changed
-        /// </summary>
-        /// <param name="sender">The invoker of the event</param>
-        /// <param name="e">The arguments passed during the event</param>
-        public void Rules_GameModeChanged(object sender, EventArgs e)
-        {
-            GameModeChanged?.Invoke(sender, e);
-        }
-
-        /// <summary>
         /// <para>Get the position of the <see cref="CaseControl"/> on the game board</para>
         /// <para>according to the current <see cref="Player"/> is playing</para>
         /// </summary>
@@ -153,8 +142,8 @@ namespace Checkers_Controls
             {
                 if (control.Parent == Board)
                 {
-                    if (CurrentPlayer == Blacks) return (Board.Controls.IndexOf(control) / 2) + 1;
-                    if (CurrentPlayer == Whites) return (int)Math.Ceiling((int)Rules.Mode / 2 * (int)Rules.Mode - (Board.Controls.IndexOf(control) / 2d));
+                    if (CurrentPlayer == Blacks) return Board.Controls.IndexOf(control) / 2 + 1;
+                    if (CurrentPlayer == Whites) return (int)Math.Ceiling((int)Rules.Mode / 2 * (int)Rules.Mode - Board.Controls.IndexOf(control) / 2d);
                 }
             }
             return default;
@@ -186,8 +175,8 @@ namespace Checkers_Controls
             {
                 case CaseDirection.Left:
                     if (lineIndex == (int)Rules.Mode) break;
-                    if (CurrentPlayer == Whites && (lineIndex * CountActiveCases == position && !isPairIndex)) break;
-                    if (CurrentPlayer == Blacks && (((lineIndex - 1) * CountActiveCases) + 1 == position && isPairIndex)) break;
+                    if (CurrentPlayer == Whites && lineIndex * CountActiveCases == position && !isPairIndex) break;
+                    if (CurrentPlayer == Blacks && (lineIndex - 1) * CountActiveCases + 1 == position && isPairIndex) break;
 
                     moveDelta = isPairIndex ? 5 : 6;
                     return position + moveDelta;
@@ -201,15 +190,15 @@ namespace Checkers_Controls
 
                 case CaseDirection.Right:
                     if (lineIndex == (int)Rules.Mode) break;
-                    if (CurrentPlayer == Whites && (((lineIndex - 1) * CountActiveCases) + 1 == position && isPairIndex)) break;
-                    if (CurrentPlayer == Blacks && (lineIndex * CountActiveCases == position && !isPairIndex)) break;
+                    if (CurrentPlayer == Whites && (lineIndex - 1) * CountActiveCases + 1 == position && isPairIndex) break;
+                    if (CurrentPlayer == Blacks && lineIndex * CountActiveCases == position && !isPairIndex) break;
 
                     moveDelta = isPairIndex ? 4 : 5;
                     return position + moveDelta;
 
                 case CaseDirection.RightBackward:
                     if (lineIndex == 1) break;
-                    if (((lineIndex - 1) * CountActiveCases) + 1 == position && isPairIndex) break;
+                    if ((lineIndex - 1) * CountActiveCases + 1 == position && isPairIndex) break;
 
                     moveDelta = isPairIndex ? 6 : 5;
                     return position - moveDelta;
@@ -242,7 +231,7 @@ namespace Checkers_Controls
         /// <summary>
         /// Initializes the <see cref="Gameboard"/> and the two <see cref="Player"/>
         /// </summary>
-        public void InitializeGame(string blackPlayerName, string whitePlayerName)
+        public void InitializeGame()
         {
             if (Rules == null) throw new NullReferenceException("The rule set to use is not defined !");
             if (Board == null) throw new NullReferenceException("The game board to play is not defined !");
@@ -250,8 +239,8 @@ namespace Checkers_Controls
             Board.Controls.Clear();
 
             //Initialize the players
-            Blacks = new Player { Color = GameColor.Black, Name = blackPlayerName, Score = 0 };
-            Whites = new Player { Color = GameColor.White, Name = whitePlayerName, Score = 0 };
+            Blacks = new Player { Color = GameColor.Black, Score = 0 };
+            Whites = new Player { Color = GameColor.White, Score = 0 };
 
             //Initialize the current player
             CurrentPlayer = Rules.FirstPlayColor == GameColor.White ? Whites : Blacks;
@@ -295,8 +284,12 @@ namespace Checkers_Controls
         {
             var countPawns = (int)Rules.Mode / 2 * ((int)Rules.Mode - 2) / 2;
 
-            var bottomPadLine = color == GameColor.White ? ((int)Rules.Mode / 2) + 1 : 0; //Calculate the bottom pad to apply on line number calculation
-            var leftPadFirstColumn = Rules.FirstRightCaseColor == GameColor.White ? 1 : 0;
+            var bottomPadLine = color == GameColor.White ? (int)Rules.Mode / 2 + 1 : 0; //Calculate the bottom pad to apply on line number calculation
+            var leftPadFirstColumn = Rules.ActiveCaseColor == GameColor.White ? 0 : 1;
+            if (Rules.FirstRightCaseColor == GameColor.Black)
+            {
+                leftPadFirstColumn = Rules.ActiveCaseColor == GameColor.White ? 1 : 0;
+            }
 
             for (var i = 0; i < countPawns; i++)
             {
@@ -306,8 +299,13 @@ namespace Checkers_Controls
                 //A:(leftPadFirstColumn + i)  => if the first case if white, add 1 to the index
                 //B:(i % (int)Rules.Mode)     => add the remainder to shift X on pair value of i
                 //C:(A + B) % (int)Rules.Mode => restrict the number of column between 0 to (int)Rules.Mode
-                //C - (lineIndex % 2)         => remove 1 when the line number is a odd value
-                var columnIndex = (leftPadFirstColumn + i + (i % (int)Rules.Mode)) % (int)Rules.Mode - (lineIndex % 2);
+                //D:C - correction * (lineIndex % 2)  => remove or add the correction when the line number is a odd value according to active color
+                var correction = Rules.ActiveCaseColor == GameColor.White ? -1 : 1;
+                if (Rules.FirstRightCaseColor == GameColor.Black)
+                {
+                    correction = Rules.ActiveCaseColor == GameColor.White ? 1 : -1;
+                }
+                var columnIndex = (leftPadFirstColumn + i + i % (int)Rules.Mode) % (int)Rules.Mode - correction * (lineIndex % 2);
 
                 Console.WriteLine($"line={lineIndex}, column={columnIndex}");
 
@@ -376,7 +374,7 @@ namespace Checkers_Controls
                     position += CountActiveCases + j;
 
                     j = j == 0 ? 1 : 0;
-                } while (position <= (CountActiveCases * (int)Rules.Mode - (diagonalLeft - CountActiveCases - 1)));
+                } while (position <= CountActiveCases * (int)Rules.Mode - (diagonalLeft - CountActiveCases - 1));
             }
 
             #endregion
@@ -411,7 +409,7 @@ namespace Checkers_Controls
                     position += CountActiveCases + j;
 
                     j = j == 0 ? -1 : 0;
-                } while (position <= (CountActiveCases * (int)Rules.Mode - ((int)Rules.Mode - diagonalRight - 1)));
+                } while (position <= CountActiveCases * (int)Rules.Mode - ((int)Rules.Mode - diagonalRight - 1));
             }
 
             #endregion

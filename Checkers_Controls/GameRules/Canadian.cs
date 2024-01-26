@@ -3,14 +3,14 @@ using Checkers_Library.Enumerations;
 
 namespace Checkers_Controls.GameRules
 {
-    public class International : GameRule
+    public class Canadian : GameRule
     {
-        public International()
+        public Canadian()
         {
             FirstRightCaseColor = GameColor.White;
             ActiveCaseColor = GameColor.Black;
             FirstPlayColor = GameColor.White;
-            Mode = GameMode.Mode10X10;
+            Mode = GameMode.Mode12X12;
             PawnCanGloupsBehind = true;
             QueenCanMoveMulti = true;
             PawnCanGloupsQueen = true;
